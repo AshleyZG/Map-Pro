@@ -27,8 +27,8 @@ export const SankeyDiagram: React.FC<SankeyDiagramData> = ({data}) => {
   useEffect(() => {
     if (!svgRef.current) return;
 
-    const width = 1200;
-    const height = 1000;
+    const width = 800;
+    const height = 600;
 
     // an initial data
     var inputdata: SankeyData = {

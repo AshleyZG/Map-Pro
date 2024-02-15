@@ -1,8 +1,12 @@
 import http.server
 import socketserver
-import urllib.parse
+from urllib.parse import urlparse, parse_qs
 import json
+import pandas as pd 
 
+from approachGrouping import get_code_position
+
+embeddings_df = pd.read_pickle("../data/embeddings.pkl")
 
 class CustomHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
@@ -26,18 +30,34 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             super().do_POST()
 
     def do_GET(self):
-        global SIGNAL
-        print(self.path)
-        if self.path == '/hello':
+
+        parsed_path = urlparse(self.path)
+        query_params = parse_qs(parsed_path.query)
+
+        print(parsed_path.path)
+        if parsed_path.path == '/hello':
             # Handle GET request to /hello
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
             self.end_headers()
             self.wfile.write(b'Hello, world!')
-        elif self.path == '/getData':
+        elif parsed_path.path == '/getData':
             with open('../data/steps_with_id.json', 'r') as fin:
                 data = json.load(fin)
             message = json.dumps({'data': data}).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.send_header('Content-length', len(message))
+            self.end_headers()
+            self.wfile.write(message)
+
+        elif parsed_path.path == '/getCodePosition':
+            n_clusters = int(query_params['nClusters'][0])
+            new_df = get_code_position(n_clusters, embeddings_df)
+            columns_to_convert = ['code', 'x', 'y', 'cluster']
+            list_of_dicts = new_df[columns_to_convert].to_dict(orient='records')
+
+            message = json.dumps({'data': list_of_dicts}).encode('utf-8')
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
             self.send_header('Content-length', len(message))

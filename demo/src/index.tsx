@@ -4,7 +4,7 @@ import './index.css';
 
 import reportWebVitals from './reportWebVitals';
 import {SankeyData, SankeyDiagram} from './sankey';
-import {generate_flow_data} from './utils';
+import {generate_flow_data, generate_flow_data_from_segs} from './utils';
 import { PlotData, PlotDiagram } from './plot';
 
 function RootComponent(): JSX.Element {
@@ -77,6 +77,12 @@ function RootComponent(): JSX.Element {
 				<button onClick={handleClusterNumberSubmit}>Submit</button>
 			</div>
 			<PlotDiagram data={plotData}/>
+			
+			{new Array(clusterNumber).fill(null).map((v, i) => {
+				return <SankeyDiagram key={i} data={generate_flow_data_from_segs(plotData.filter(obj => obj.cluster === i))}/>
+			})}
+			
+			
 			<SankeyDiagram data={sankeyData}/>
 			
 		</React.StrictMode>

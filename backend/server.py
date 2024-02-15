@@ -4,9 +4,9 @@ from urllib.parse import urlparse, parse_qs
 import json
 import pandas as pd 
 
-from approachGrouping import get_code_position
+from approachGrouping import get_code_position, get_seg_labels
 
-embeddings_df = pd.read_pickle("../data/embeddings.pkl")
+embeddings_df = pd.read_pickle("../data/embeddings_with_segments_large.pkl")
 
 class CustomHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
@@ -54,7 +54,9 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         elif parsed_path.path == '/getCodePosition':
             n_clusters = int(query_params['nClusters'][0])
             new_df = get_code_position(n_clusters, embeddings_df)
-            columns_to_convert = ['code', 'x', 'y', 'cluster']
+            new_df = get_seg_labels(15, new_df)
+            # print(new_df)
+            columns_to_convert = ['code', 'x', 'y', 'cluster', 'segLabels']
             list_of_dicts = new_df[columns_to_convert].to_dict(orient='records')
 
             message = json.dumps({'data': list_of_dicts}).encode('utf-8')

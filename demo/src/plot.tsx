@@ -56,6 +56,10 @@ export const PlotDiagram: React.FC<PlotDiagramData> = ({data}) => {
             .attr('cx', d => xScale(d.x))
             .attr('cy', d => yScale(d.y))
             .attr('r', 5)
+            .attr('id', (d, i) => i)
+            .on("click", (event, d) => {
+                console.log(d.code);
+            })
             .style('fill', (d) => color(d.cluster.toString()));
 
     }, [data]);

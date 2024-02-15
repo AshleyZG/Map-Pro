@@ -5,20 +5,46 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 import {SankeyData, SankeyDiagram} from './sankey';
 import {generate_flow_data} from './utils';
+import { PlotData, PlotDiagram } from './plot';
 
 function RootComponent(): JSX.Element {
 
     // TODO: store data
-        const [data, setdata] = useState<any>([]);
         const [sankeyData, setSankeyData] = useState<SankeyData>({nodes: [], links: []});
+		const [plotData, setPlotData] = useState<PlotData[]>([]);
         const [criteriaInput, setCriteriaInput] = useState<string|undefined>(undefined);
+		const [clusterNumber, setClusterNumberInput] = useState<number|undefined>(4);
 
+	// create refs
+	const clusterNumberInputRef = useRef<HTMLInputElement>(null);
 
-    const handleSubmit = () => {
+    const handleSubmit = (event: React.MouseEvent) => {
         // TODO
+		console.log(event.currentTarget);
         console.log('TODO: handleSubmit');
     }
 
+	const handleClusterNumberSubmit = (event: React.MouseEvent) => {
+		const newClusterNumber = parseInt(clusterNumberInputRef.current!.value);
+		if (clusterNumberInputRef.current){
+			setClusterNumberInput(newClusterNumber);
+		}
+
+		const fetchData = async () => {
+			try{
+				const response = await fetch(`http://localhost:8000/getCodePosition?nClusters=${newClusterNumber}`);
+				const jsonData = await response.json();
+
+				const data = jsonData.data;
+				setPlotData(data);
+
+			} catch (error){
+				console.log(error);
+			}
+		};
+
+		fetchData();
+	}
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -40,12 +66,19 @@ function RootComponent(): JSX.Element {
 
 	return (
 		<React.StrictMode>
-        <div id="classifier-panel">
-                <label htmlFor="criteria">Specify a criteria:</label>
-                <input type="text" id="criteria" ref={(input) => setCriteriaInput(input?.value)} />
-                <button onClick={handleSubmit}>Submit</button>
-        </div>
-        <SankeyDiagram data={sankeyData}/>
+			<div id="classifier-panel">
+				<label htmlFor="criteria">Specify a criteria:</label>
+				<input type="text" id="criteria" ref={(input) => setCriteriaInput(input?.value)} />
+				<button onClick={handleSubmit}>Submit</button>
+			</div>
+			<div id="cluster-panel">
+				<label htmlFor='cluster-number'>number of clusters</label>
+				<input type="number" id="cluster-number" defaultValue={4} ref={clusterNumberInputRef} />
+				<button onClick={handleClusterNumberSubmit}>Submit</button>
+			</div>
+			<PlotDiagram data={plotData}/>
+			<SankeyDiagram data={sankeyData}/>
+			
 		</React.StrictMode>
 	);
 }

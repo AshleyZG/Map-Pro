@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 
@@ -19,16 +19,20 @@ export interface SankeyData {
 
 interface SankeyDiagramData {
     data: SankeyData;
+    percentage: number; 
 }
 
-export const SankeyDiagram: React.FC<SankeyDiagramData> = ({data}) => {
+export const SankeyDiagram: React.FC<SankeyDiagramData> = ({data, percentage}) => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const [statePercentage, setPercentage] = useState<number>(1);
 
   useEffect(() => {
     if (!svgRef.current) return;
 
+    setPercentage(percentage);
+    
     const width = 800;
-    const height = 600;
+    const height = 600*percentage;
 
     // an initial data
     var inputdata: SankeyData = {
@@ -98,8 +102,8 @@ export const SankeyDiagram: React.FC<SankeyDiagramData> = ({data}) => {
       .attr("text-anchor", "end")
       .text(d => d.name);
 
-  }, [data]);
+  }, [data, percentage]);
 
-  return <svg ref={svgRef} width="800" height="600" style={{ border: "1px solid black" }} />;
+  return <svg ref={svgRef} width="800" height={600*statePercentage} style={{ border: "1px solid black" }} />;
 };
 

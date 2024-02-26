@@ -14,6 +14,7 @@ function RootComponent(): JSX.Element {
 		const [plotData, setPlotData] = useState<PlotData[]>([]);
         const [criteriaInput, setCriteriaInput] = useState<string|undefined>(undefined);
 		const [clusterNumber, setClusterNumberInput] = useState<number|undefined>(4);
+		const [sortedClusterIDs, setSortedClusterIDs] = useState<number[]>([0, 1, 2, 3]);
 
 	// create refs
 	const clusterNumberInputRef = useRef<HTMLInputElement>(null);
@@ -26,6 +27,8 @@ function RootComponent(): JSX.Element {
 
 	const handleClusterNumberSubmit = (event: React.MouseEvent) => {
 		const newClusterNumber = parseInt(clusterNumberInputRef.current!.value);
+		const newClusterIDs = new Array(newClusterNumber).fill(null).map((v, i) => i);
+
 		if (clusterNumberInputRef.current){
 			setClusterNumberInput(newClusterNumber);
 		}
@@ -37,6 +40,9 @@ function RootComponent(): JSX.Element {
 
 				const data = jsonData.data;
 				setPlotData(data);
+
+				const newSortedClusterIDs = newClusterIDs.sort((a, b) => {return -(data as any[]).filter(obj => (obj as any).cluster === a).length + (data as any[]).filter(obj  => (obj as any).cluster === b).length});
+				setSortedClusterIDs(newSortedClusterIDs);
 
 			} catch (error){
 				console.log(error);
@@ -78,12 +84,13 @@ function RootComponent(): JSX.Element {
 			</div>
 			<PlotDiagram data={plotData}/>
 			
-			{new Array(clusterNumber).fill(null).map((v, i) => {
-				return <SankeyDiagram key={i} data={generate_flow_data_from_segs(plotData.filter(obj => obj.cluster === i))}/>
+			{sortedClusterIDs.map((v, i) => {
+				// console.log(plotData.filter(obj => obj.cluster === i).length/plotData.length);
+				return <SankeyDiagram key={i} data={generate_flow_data_from_segs(plotData.filter(obj => obj.cluster === v))} percentage={plotData.length===0 ? 1: plotData.filter(obj => obj.cluster === v).length/plotData.length}/>
 			})}
 			
 			
-			<SankeyDiagram data={sankeyData}/>
+			{/* <SankeyDiagram data={sankeyData} percentage={1}/> */}
 			
 		</React.StrictMode>
 	);

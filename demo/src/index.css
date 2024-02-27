@@ -37,3 +37,15 @@ code {
 #cluster-panel input {
   width: 50vw; /* Adjust the width as needed */
 }
+
+#viz-panel {
+  width: 50vw;
+  float: left;
+}
+
+#code-panel {
+  width: 40vw;
+  float: right;
+  overflow-y: scroll;
+  height: 100vh;
+}

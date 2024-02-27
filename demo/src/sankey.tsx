@@ -15,14 +15,16 @@ interface Link {
 export interface SankeyData {
   nodes: Node[];
   links: Link[];
+  nodes2Segments: {[key: string]: string[]};
 }
 
-interface SankeyDiagramData {
+interface SankeyDiagramProps {
     data: SankeyData;
     percentage: number; 
+    updateSelectionFn: (codeSelection: string[]) => void;
 }
 
-export const SankeyDiagram: React.FC<SankeyDiagramData> = ({data, percentage}) => {
+export const SankeyDiagram: React.FC<SankeyDiagramProps> = ({data, percentage, updateSelectionFn}) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [statePercentage, setPercentage] = useState<number>(1);
 
@@ -47,6 +49,7 @@ export const SankeyDiagram: React.FC<SankeyDiagramData> = ({data, percentage}) =
         { source: 1, target: 2, value: 15 },
         // Add your links here
       ],
+      nodes2Segments: {},
     };
     // once passed data from the backend, update the data
     if (data.nodes.length > 0) {
@@ -54,7 +57,7 @@ export const SankeyDiagram: React.FC<SankeyDiagramData> = ({data, percentage}) =
     }
 
     const sankeyGenerator = sankey<Node, Link>()
-      .nodeWidth(1)
+      .nodeWidth(20)
       .nodePadding(1)
       .extent([[1, 1], [width - 1, height - 5]]);
 
@@ -76,6 +79,7 @@ export const SankeyDiagram: React.FC<SankeyDiagramData> = ({data, percentage}) =
       .style("stroke", "#000")
       .style("stroke-opacity", 0.2)
       .style("stroke-width", (d: any) => Math.max(1, d.width));
+      
 
     // Draw the nodes
     graph.append("g")
@@ -83,11 +87,16 @@ export const SankeyDiagram: React.FC<SankeyDiagramData> = ({data, percentage}) =
       .data(nodes)
       .enter()
       .append("rect")
+      .attr('id', d => d.name)
       .attr("x", (d: any) => d.x0)
       .attr("y", (d: any) => d.y0)
       .attr("height", (d: any) => d.y1 - d.y0)
       .attr("width", sankeyGenerator.nodeWidth())
-      .style("fill", "#555");
+      .style("fill", "#555")
+      .on("click", (event, d) =>{
+          var codeList = inputdata.nodes2Segments[event.target.id];
+          updateSelectionFn(codeList);
+      });
 
     // Add titles for hover interaction
     graph.append("g")
@@ -100,7 +109,6 @@ export const SankeyDiagram: React.FC<SankeyDiagramData> = ({data, percentage}) =
       .attr("y", (d: any) => (d.y1 + d.y0) / 2)
       .attr("dy", "0.35em")
       .attr("text-anchor", "end")
-      .text(d => d.name);
 
   }, [data, percentage]);
 

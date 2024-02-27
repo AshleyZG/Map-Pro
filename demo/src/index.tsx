@@ -6,15 +6,17 @@ import reportWebVitals from './reportWebVitals';
 import {SankeyData, SankeyDiagram} from './sankey';
 import {generate_flow_data, generate_flow_data_from_segs} from './utils';
 import { PlotData, PlotDiagram } from './plot';
+import { LabeledCodeBlockElement } from './code-block';
 
 function RootComponent(): JSX.Element {
 
     // TODO: store data
-        const [sankeyData, setSankeyData] = useState<SankeyData>({nodes: [], links: []});
+        const [sankeyData, setSankeyData] = useState<SankeyData>({nodes: [], links: [], nodes2Segments: {}});
 		const [plotData, setPlotData] = useState<PlotData[]>([]);
         const [criteriaInput, setCriteriaInput] = useState<string|undefined>(undefined);
 		const [clusterNumber, setClusterNumberInput] = useState<number|undefined>(4);
 		const [sortedClusterIDs, setSortedClusterIDs] = useState<number[]>([0, 1, 2, 3]);
+		const [codeSelection, setCodeSelection] = useState<string[]>([]);
 
 	// create refs
 	const clusterNumberInputRef = useRef<HTMLInputElement>(null);
@@ -52,6 +54,10 @@ function RootComponent(): JSX.Element {
 		fetchData();
 	}
 
+	const updateSelectionFn = (codeSelection: string[]) => {
+		setCodeSelection(codeSelection);
+	}
+
 	useEffect(() => {
 		const fetchData = async () => {
 			try{
@@ -82,13 +88,26 @@ function RootComponent(): JSX.Element {
 				<input type="number" id="cluster-number" defaultValue={4} ref={clusterNumberInputRef} />
 				<button onClick={handleClusterNumberSubmit}>Submit</button>
 			</div>
-			<PlotDiagram data={plotData}/>
+
+			<div id="viz-panel">
+				<PlotDiagram data={plotData} updateSelectionFn={updateSelectionFn}/>
+				
+				{sortedClusterIDs.map((v, i) => {
+					return <SankeyDiagram key={i} 
+						data={generate_flow_data_from_segs(plotData.filter(obj => obj.cluster === v))} 
+						percentage={plotData.length===0 ? 1: plotData.filter(obj => obj.cluster === v).length/plotData.length} 
+						updateSelectionFn={updateSelectionFn}
+					/>
+				})}
+			</div>
+
+			<div id="code-panel">
 			
-			{sortedClusterIDs.map((v, i) => {
-				// console.log(plotData.filter(obj => obj.cluster === i).length/plotData.length);
-				return <SankeyDiagram key={i} data={generate_flow_data_from_segs(plotData.filter(obj => obj.cluster === v))} percentage={plotData.length===0 ? 1: plotData.filter(obj => obj.cluster === v).length/plotData.length}/>
-			})}
-			
+				{codeSelection.map((v, i) => {
+					return <LabeledCodeBlockElement key={i} content={v}/>
+				})}
+
+			</div>
 			
 			{/* <SankeyDiagram data={sankeyData} percentage={1}/> */}
 			

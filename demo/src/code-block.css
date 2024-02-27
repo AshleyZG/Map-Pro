@@ -1,0 +1,22 @@
+pre.labeled-code-block {
+    background-color: #f4f4f4;
+    border: 1px solid #ccc;
+    padding: 10px;
+    line-height: 1.5;
+    overflow-x: auto; /* Enable horizontal scrolling if needed */
+    white-space: pre-wrap; /* Preserve line breaks and wrap text */
+}
+
+pre.labeled-code-block.incorrect {
+    border: solid red;
+    background-color: #FEE;
+}
+
+/* Style the <code> tag to use a monospaced font */
+code {
+    font-family: monospace;
+}
+
+span.label {
+    color: #9c690a;
+} 

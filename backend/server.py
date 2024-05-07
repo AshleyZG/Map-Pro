@@ -6,7 +6,10 @@ import pandas as pd
 
 from approachGrouping import get_code_position, get_seg_labels
 
-embeddings_df = pd.read_pickle("../data/embeddings_with_segments_large.pkl")
+embeddings_df = pd.read_pickle("../data/all_embeddings_with_segments_large.pkl")
+
+with open("../data/keystroke.json", "r") as fin:
+    keystroke_data = json.load(fin)
 
 class CustomHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
@@ -55,11 +58,20 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             n_clusters = int(query_params['nClusters'][0])
             new_df = get_code_position(n_clusters, embeddings_df)
             new_df = get_seg_labels(15, new_df)
-            # print(new_df)
-            columns_to_convert = ['code', 'x', 'y', 'cluster', 'segLabels']
+
+            columns_to_convert = ['code', 'x', 'y', 'cluster', 'correctedCluster', 'segLabels', 'segments']
             list_of_dicts = new_df[columns_to_convert].to_dict(orient='records')
 
-            message = json.dumps({'data': list_of_dicts}).encode('utf-8')
+            message = json.dumps({'data': list_of_dicts, 'keystroke': keystroke_data}).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain')
+            self.send_header('Content-length', len(message))
+            self.end_headers()
+            self.wfile.write(message)
+
+
+        elif parsed_path.path == '/getKeystrokeData':
+            message = json.dumps({'keystroke': keystroke_data}).encode('utf-8')
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
             self.send_header('Content-length', len(message))

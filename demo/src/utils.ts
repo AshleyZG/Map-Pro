@@ -60,3 +60,60 @@ export function generate_flow_data_from_segs(data: PlotData[]): SankeyData{
     })
     return results;
 }
+
+export function calculateMean(arr: number[]): number {
+    const sum = arr.reduce((acc, curr) => acc + curr, 0);
+    return sum / arr.length;
+  }
+
+
+export  function findMostCommonItem<T>(array: T[]): T {
+    // if (array.length === 0) return null;
+
+    const countMap: Map<T, number> = new Map();
+    let mostCommonItem: T = array[0];
+    let maxCount: number = 1;
+
+    for (const item of array) {
+        const count = (countMap.get(item) || 0) + 1;
+        countMap.set(item, count);
+
+        if (count > maxCount) {
+            mostCommonItem = item;
+            maxCount = count;
+        }
+    }
+
+    return mostCommonItem;
+}
+
+
+export function findKeyOfMaxValue(obj: Record<string, number>): string | null {
+    let maxKey: string | null = null;
+    let maxValue: number = -Infinity;
+
+    // Iterate over each entry in the object
+    Object.entries(obj).forEach(([key, value]) => {
+        if (maxValue < value) {
+            maxValue = value;
+            maxKey = key;
+        }
+    });
+
+    return maxKey;
+}
+
+export function mergeDictionariesWithUniqueKeys<T>(dict1: Record<string, T>, dict2: Record<string, T>, suffix: string = "_dup"): Record<string, T> {
+    const merged: Record<string, T> = { ...dict1 };
+
+    for (const [key, value] of Object.entries(dict2)) {
+        let newKey = key;
+        // If the key exists, append a suffix and check again until a unique key is found
+        while (merged.hasOwnProperty(newKey)) {
+            newKey += suffix;
+        }
+        merged[newKey] = value;
+    }
+
+    return merged;
+}

@@ -7,7 +7,8 @@ export interface PlotData {
     x: number;
     y: number;
     cluster: number;
-    segLabels: string[];
+    correctedCluster: number;
+    segLabels: number[];
     segments: string[];
 }
 

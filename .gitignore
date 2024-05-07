@@ -4,3 +4,4 @@ data/*
 .ipynb_checkpoints/*
 notebooks/.ipynb_checkpoints/*
 backend/__pycache__
+demo/package*
